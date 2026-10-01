@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'firebase_options.dart';
 
-import 'data/repositories/firebase_vibration_repository.dart';
+import 'data/repositories/web_socket_vibration_repository.dart';
 import 'domain/usecases/export_history_usecase.dart';
 import 'presentation/cubit/dashboard_cubit.dart';
 import 'presentation/cubit/history_cubit.dart';
@@ -13,10 +11,6 @@ import 'services/background_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
 
   // Inicializa o serviço de notificações
   final notificationService = NotificationService();
@@ -34,8 +28,8 @@ class BioglowApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // É recomendado inicializar instâncias que compartilham streams antes do MultiBlocProvider
-    final repository = FirebaseVibrationRepository();
+    // Inicializa a conexão com o hardware via WebSocket Local
+    final repository = WebSocketVibrationRepository();
     final exportUseCase = ExportHistoryUseCase();
 
     return MaterialApp(

@@ -1,43 +1,26 @@
 import 'dart:async';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import '../../services/notification_service.dart';
+import '../repositories/vibration_repository.dart';
+import '../entities/vibration_entity.dart';
 
 class MonitorAnomalyUseCase {
-  final FirebaseDatabase _database;
+  final VibrationRepository _repository;
   final NotificationService _notificationService = NotificationService();
   
   Timer? _anomalyTimer;
-  StreamSubscription<DatabaseEvent>? _subscription;
+  StreamSubscription<List<VibrationEntity>>? _subscription;
   bool _isAlertActive = false;
 
-  MonitorAnomalyUseCase({FirebaseDatabase? database}) 
-      : _database = database ?? FirebaseDatabase.instance;
+  MonitorAnomalyUseCase(this._repository);
   
   void startMonitoring() {
-    final ref = _database.ref('bioglow/test_data');
-    
-    _subscription = ref.limitToLast(1).onChildAdded.listen((DatabaseEvent event) {
-      if (event.snapshot.value == null) return;
+    _subscription = _repository.getVibrationStream().listen((List<VibrationEntity> entities) {
+      if (entities.isEmpty) return;
 
       try {
-        final value = event.snapshot.value;
-        double magnitude = 0.0;
-        
-        if (value is Map) {
-          final data = Map<String, dynamic>.from(value);
-          if (data.containsKey('magnitude')) {
-            magnitude = (data['magnitude'] as num).toDouble();
-          } else if (data.containsKey('value')) {
-            magnitude = (data['value'] as num).toDouble();
-          }
-        } else if (value is num) {
-          magnitude = value.toDouble();
-        } else if (value is String) {
-          magnitude = double.tryParse(value) ?? 0.0;
-        }
-
-        _processData(magnitude);
+        final lastEntity = entities.last;
+        _processData(lastEntity.magnitude);
       } catch (e) {
         debugPrint('Erro ao processar dado da boia no background: $e');
       }

@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_background_service/flutter_background_service.dart';
 
+import '../data/repositories/web_socket_vibration_repository.dart';
 import '../domain/usecases/monitor_anomaly_usecase.dart';
-import '../firebase_options.dart';
 import 'notification_service.dart';
 
 Future<void> initializeBackgroundService() async {
@@ -43,15 +42,11 @@ void onStart(ServiceInstance service) async {
   DartPluginRegistrant.ensureInitialized();
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inicializa o Firebase no isolate de background
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
   final notificationService = NotificationService();
   await notificationService.initialize();
 
-  final monitorUseCase = MonitorAnomalyUseCase();
+  final repository = WebSocketVibrationRepository();
+  final monitorUseCase = MonitorAnomalyUseCase(repository);
   monitorUseCase.startMonitoring();
 
   // Permite comunicação com o serviço (ex: para pará-lo)

@@ -8,8 +8,6 @@ environment:
 
 dependencies:
   csv: ^8.0.0
-  firebase_core: ^4.15.0
-  firebase_database: ^12.6.0
   fl_chart: ^1.2.0
   flutter:
     sdk: flutter
@@ -22,6 +20,7 @@ dependencies:
   permission_handler: ^13.0.2
   printing: ^5.15.1
   rxdart: ^0.28.0
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:
