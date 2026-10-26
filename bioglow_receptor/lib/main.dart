@@ -1,25 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'data/repositories/web_socket_vibration_repository.dart';
-import 'domain/usecases/export_history_usecase.dart';
+import 'data/esp32_websocket_service.dart';
 import 'presentation/cubit/dashboard_cubit.dart';
-import 'presentation/cubit/history_cubit.dart';
-import 'presentation/screens/main_screen.dart';
-import 'services/notification_service.dart';
-import 'services/background_service.dart';
+import 'presentation/screens/dashboard_screen.dart';
+import 'presentation/widgets/ausencia_monitor.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Inicializa o serviço de notificações
-  final notificationService = NotificationService();
-  await notificationService.initialize();
-  await notificationService.requestPermissions();
-
-  // Inicializa e inicia o serviço de background
-  await initializeBackgroundService();
-
   runApp(const BioglowApp());
 }
 
@@ -28,28 +16,22 @@ class BioglowApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Inicializa a conexão com o hardware via WebSocket Local
-    final repository = WebSocketVibrationRepository();
-    final exportUseCase = ExportHistoryUseCase();
-
-    return MaterialApp(
-      title: 'Bioglow Receptor',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.blue,
-        fontFamily: 'Inter',
-      ),
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider<DashboardCubit>(
-            create: (context) => DashboardCubit(repository),
+    // O serviço é compartilhado entre o dashboard (leituras ao vivo) e o
+    // relatório (dados do cartão SD). Quem o encerra é o DashboardCubit.
+    return RepositoryProvider(
+      create: (_) => Esp32WebSocketService(),
+      child: BlocProvider(
+        create: (ctx) => DashboardCubit(ctx.read<Esp32WebSocketService>()),
+        child: MaterialApp(
+          title: 'Bioglow Receptor',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+            brightness: Brightness.dark,
+            colorSchemeSeed: Colors.cyan,
+            useMaterial3: true,
           ),
-          BlocProvider<HistoryCubit>(
-            create: (context) => HistoryCubit(repository, exportUseCase),
-          ),
-        ],
-        child: const MainScreen(),
+          home: const AusenciaMonitor(child: DashboardScreen()),
+        ),
       ),
     );
   }
