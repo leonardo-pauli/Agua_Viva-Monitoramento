@@ -1,0 +1,25 @@
+name: bioglow_receptor
+description: "Receptor Bioglow - monitoramento de pH, Temperatura, Condutividade e Turbidez via Wi-Fi (WebSocket) e cartão SD."
+publish_to: 'none'
+version: 0.3.0+3
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  fl_chart: ^1.2.0
+  flutter_bloc: ^9.1.1
+  web_socket_channel: ^3.0.3
+  shared_preferences: ^2.5.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
